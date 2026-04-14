@@ -1,0 +1,1 @@
+{"case", "greet", "out", "hello, Ada.", "info", {"argc", 1, "argv", {"Ada"}}}

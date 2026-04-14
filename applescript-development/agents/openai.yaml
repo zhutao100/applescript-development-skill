@@ -1,0 +1,6 @@
+interface:
+  display_name: "AppleScript Development (macOS 15/26+)"
+  short_description: "Reliable AppleScript (.applescript) dev + test workflows, with installable templates and CI-friendly harnesses."
+  default_prompt: "Use this skill to set up a repeatable AppleScript dev/test harness and CI strategy (compile gate, unit-ish tests, integration test segmentation, TCC/Automation considerations)."
+policy:
+  allow_implicit_invocation: true

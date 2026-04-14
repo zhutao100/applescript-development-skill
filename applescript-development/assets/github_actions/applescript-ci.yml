@@ -1,0 +1,17 @@
+name: AppleScript CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile
+        run: ./scripts/compile.sh
+
+      - name: Unit tests (golden output)
+        run: ./scripts/test_unit.sh
