@@ -46,6 +46,7 @@ This installs a small project layout with:
 
 - **`applescript-development/SKILL.md`**: executive workflow for agents.
 - **`applescript-development/references/REFERENCE.md`**: deeper details (TCC/Automation, CI strategies, UI scripting reliability, signing/entitlements pointers).
+- **`applescript-development/references/SAFE_TESTING.md`**: safe, verifiable closed loops for integration/UI tests (disposable macOS VMs cloned per run).
 - **`applescript-development/scripts/`**: ready-to-run utilities agents can invoke directly.
 - **`applescript-development/assets/`**: ready-to-copy templates installed by the scripts.
 

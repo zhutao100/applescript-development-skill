@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>PayloadType</key>
+      <string>com.apple.TCC.configuration-profile-policy</string>
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+      <key>PayloadIdentifier</key>
+      <string>com.example.pppc.appleevents</string>
+      <key>PayloadUUID</key>
+      <string>00000000-0000-0000-0000-000000000001</string>
+      <key>PayloadDisplayName</key>
+      <string>PPPC (AppleEvents) Template</string>
+
+      <key>Services</key>
+      <dict>
+        <key>AppleEvents</key>
+        <array>
+          <dict>
+            <!--
+              IMPORTANT:
+              - PPPC profiles generally must be delivered via user-approved MDM.
+              - Replace placeholders below with values for your sender (the automation runner)
+                and receiver (the scripted target app).
+
+              Placeholders to replace:
+              - SENDER_IDENTIFIER: bundle ID (recommended) or absolute path
+              - SENDER_IDENTIFIER_TYPE: bundleID|path
+              - SENDER_CODE_REQUIREMENT: codesign requirement string for the sender
+              - RECEIVER_IDENTIFIER: bundle ID (recommended) or absolute path
+              - RECEIVER_IDENTIFIER_TYPE: bundleID|path
+              - RECEIVER_CODE_REQUIREMENT: codesign requirement string for the receiver
+
+              How to obtain code requirements:
+              - codesign -dr - /Applications/YourApp.app 2>/dev/null
+              - spctl -a -vv --type execute /Applications/YourApp.app
+            -->
+            <key>Comment</key>
+            <string>Allow SENDER_IDENTIFIER to send AppleEvents to RECEIVER_IDENTIFIER</string>
+
+            <key>Identifier</key>
+            <string>SENDER_IDENTIFIER</string>
+
+            <key>IdentifierType</key>
+            <string>SENDER_IDENTIFIER_TYPE</string>
+
+            <key>CodeRequirement</key>
+            <string>SENDER_CODE_REQUIREMENT</string>
+
+            <key>Allowed</key>
+            <true/>
+
+            <key>AEReceiverIdentifier</key>
+            <string>RECEIVER_IDENTIFIER</string>
+
+            <key>AEReceiverIdentifierType</key>
+            <string>RECEIVER_IDENTIFIER_TYPE</string>
+
+            <key>AEReceiverCodeRequirement</key>
+            <string>RECEIVER_CODE_REQUIREMENT</string>
+          </dict>
+        </array>
+      </dict>
+    </dict>
+  </array>
+
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+  <key>PayloadIdentifier</key>
+  <string>com.example.pppc</string>
+  <key>PayloadUUID</key>
+  <string>00000000-0000-0000-0000-000000000000</string>
+  <key>PayloadDisplayName</key>
+  <string>PPPC Templates</string>
+  <key>PayloadOrganization</key>
+  <string>Example</string>
+</dict>
+</plist>

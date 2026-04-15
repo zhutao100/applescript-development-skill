@@ -10,6 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Policy scan
+        if: ${{ hashFiles('scripts/policy_scan.sh') != '' }}
+        run: ./scripts/policy_scan.sh --src ./src
+
       - name: Compile
         run: ./scripts/compile.sh
 

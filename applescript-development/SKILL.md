@@ -4,7 +4,7 @@ description: Reliable development, testing, and CI workflows for AppleScript aut
 license: MIT
 compatibility: macOS 15+ with /usr/bin/osascript, /usr/bin/osacompile, /usr/bin/sdef. Hosted CI generally supports compile/unit tests only; integration/UI automation requires a logged-in GUI session and pre-provisioned TCC permissions on self-hosted runners.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: "community"
 ---
 
@@ -58,6 +58,57 @@ If you installed the template, from the project root:
 ./scripts/test_unit.sh
 ```
 
+### 6) Run a static policy scan (Tier 0 safety gate)
+
+Use this before executing agent-authored scripts.
+
+```sh
+applescript-development/scripts/policy_scan.sh --src ./src
+```
+
+To enforce a strict allowlist policy, create a project-local policy file (or copy the default from
+`applescript-development/assets/policy/default_policy.bash`) and run with `--strict`.
+
+### 7) Run integration/UI tests inside a disposable Tart VM clone (Tier 2 primary boundary)
+
+For any test that drives real apps (Apple Events / UI scripting), the recommended safety boundary is
+"clone a golden VM → run → collect artifacts → delete".
+
+```sh
+applescript-development/scripts/run_in_vm_tart.sh \
+  --base <golden-vm-or-image-ref> \
+  --cmd  './scripts/test_integration.sh' \
+  --artifacts ./artifacts/vm \
+  --no-graphics
+```
+
+If `--base` is omitted, the helper prefers an existing local VM (for example `macos-26-xcode` or `tahoe-base`) and
+otherwise falls back to downloading the default remote image.
+
+### 8) Prepare a Tart "golden" VM base image (one-time provisioning)
+
+Use this to clone (or create) a VM you will later use as `--base` for clone-per-run integration tests.
+
+```sh
+applescript-development/scripts/prepare_tart_golden_vm.sh --name asdev-tahoe --run
+```
+
+### 9) Install PPPC (MDM) profile templates (optional)
+
+If you manage test machines with MDM, PPPC profiles can pre-approve Automation permissions for stable runner identities.
+
+```sh
+applescript-development/scripts/install_pppc_templates.sh --dest .
+```
+
+### 10) Install TCC prompt snippets (optional)
+
+When provisioning a golden VM, it is often useful to run tiny scripts that reliably trigger the relevant prompts once.
+
+```sh
+applescript-development/scripts/install_tcc_snippets.sh --dest .
+```
+
 ## Recommended workflow for agents (step-by-step)
 
 ### Step 0 — Triage the automation surface
@@ -87,6 +138,9 @@ If starting from scratch, run the template installer (Quick action #1) and work 
    - Run on **self-hosted** runners or dedicated machines where permissions are provisioned.
 2. Add explicit timeouts and state polling (avoid blind `delay`).
 
+If tests interact with real apps or UI, prefer running them in a disposable macOS VM cloned per run.
+Host-only sandboxing cannot reliably prevent the *target app* from mutating its own stores.
+
 ### Step 4 — Make failures diagnosable
 
 1. Emit structured error reports (phase markers, target app, error number).
@@ -107,3 +161,4 @@ Diff snapshots across upgrades to catch contract drift early.
 For TCC/Automation behavior, CI realities, UI scripting reliability patterns, and packaging/signing notes, see:
 
 - [references/REFERENCE.md](references/REFERENCE.md)
+- [references/SAFE_TESTING.md](references/SAFE_TESTING.md)

@@ -27,8 +27,8 @@ applescript-development/
 ## Editing rules
 
 - Keep `applescript-development/SKILL.md` **under ~500 lines** and focused on **execution steps**.
-- Put deep details in **one** reference doc: `applescript-development/references/REFERENCE.md`.
-- Avoid multi-hop reference chains. `SKILL.md` may link to `references/REFERENCE.md`, but references should not link onward to more local files.
+- Put deep details in `applescript-development/references/`.
+- Avoid multi-hop reference chains. `SKILL.md` may link to reference docs, but references should not link onward to more local files.
 - Prefer **ready-to-run scripts** over long copy/paste snippets when the workflow can be automated.
 
 ## Expected workflows to validate after changes

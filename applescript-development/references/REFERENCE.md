@@ -63,6 +63,9 @@ The template installed by `scripts/install_template.sh` follows this structure.
 
 ## 3) Testing strategy that actually works
 
+Rule of thumb for agent-authored AppleScript: treat it as **untrusted code** and separate "fast, safe" validation from
+"real app" integration.
+
 ### A) “Unit-ish” golden tests (baseline; CI-friendly)
 
 Goal: validate logic without triggering permissions.
@@ -88,6 +91,15 @@ Best practice:
 
 - Run integration tests only on a dedicated dev machine or a self-hosted runner with permissions provisioned.
 - Add explicit timeouts and *wait for state* loops.
+
+High-safety variant (recommended when tests interact with real user apps/data): run integration tests inside
+**disposable macOS VMs cloned per run**, then delete/revert after each execution.
+
+This skill includes a host helper for Tart-based runs:
+
+```sh
+applescript-development/scripts/run_in_vm_tart.sh --base <golden-vm> --cmd './scripts/test_integration.sh'
+```
 
 ### C) UI scripting (last resort)
 

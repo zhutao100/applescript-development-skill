@@ -10,6 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Policy scan
+        run: ./scripts/policy_scan.sh --src ./src
+
       - name: Compile
         run: ./scripts/compile.sh
 

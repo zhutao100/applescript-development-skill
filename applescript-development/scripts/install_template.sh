@@ -60,7 +60,7 @@ mkdir -p "$DEST"
 # Refuse to clobber common top-level template paths unless --force.
 if [[ $FORCE -ne 1 ]]; then
   conflicts=()
-  for p in src tests scripts .github Makefile .gitignore README.md; do
+  for p in src tests scripts policy .github Makefile .gitignore README.md; do
     if [[ -e "$DEST/$p" ]]; then
       conflicts+=("$p")
     fi
