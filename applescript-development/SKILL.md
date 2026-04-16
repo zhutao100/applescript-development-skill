@@ -4,7 +4,7 @@ description: Reliable development, testing, and CI workflows for AppleScript aut
 license: MIT
 compatibility: macOS 15+ with /usr/bin/osascript, /usr/bin/osacompile, /usr/bin/sdef. Hosted CI generally supports compile/unit tests only; integration/UI automation requires a logged-in GUI session and pre-provisioned TCC permissions on self-hosted runners.
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   author: "community"
 ---
 
@@ -82,6 +82,12 @@ applescript-development/scripts/run_in_vm_tart.sh \
   --no-graphics
 ```
 
+Optional hardening:
+
+- Keep the VM offline: add `--net-host`.
+- Allow only explicit CIDRs: add `--net-softnet --net-softnet-block 0.0.0.0/0 --net-softnet-allow <cidrs>`.
+- Note: some networking modes require passwordless sudo on the host for non-interactive runs.
+
 If `--base` is omitted, the helper prefers an existing local VM (for example `macos-26-xcode` or `tahoe-base`) and
 otherwise falls back to downloading the default remote image.
 
@@ -92,6 +98,8 @@ Use this to clone (or create) a VM you will later use as `--base` for clone-per-
 ```sh
 applescript-development/scripts/prepare_tart_golden_vm.sh --name asdev-tahoe --run
 ```
+
+If you create from an IPSW (or a `*-vanilla` base), install and enable the Tart Guest Agent in the VM to use `tart exec`.
 
 ### 9) Install PPPC (MDM) profile templates (optional)
 

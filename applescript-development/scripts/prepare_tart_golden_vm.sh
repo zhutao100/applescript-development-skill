@@ -16,6 +16,8 @@ Options:
   --image <vm|oci-ref>     Source VM name or remote image reference to clone (default: prefer local, else ghcr.io/cirruslabs/macos-tahoe-base:latest)
   --from-ipsw <path|latest>
                            Create from an IPSW instead of cloning a remote image
+  --disk-size <gb>         Disk size (GB) when using --from-ipsw (default: Tart default)
+  --disk-format <raw|asif> Disk format when using --from-ipsw (asif requires macOS 26+ host; default: Tart default)
   --run                    Start the VM after creation
   --no-graphics            Start without a GUI window (use with --run)
   --force                  Delete any existing local VM with the same --name first
@@ -46,6 +48,8 @@ NAME=""
 IMAGE="${ASDEV_TART_DEFAULT_IMAGE:-ghcr.io/cirruslabs/macos-tahoe-base:latest}"
 IMAGE_SPECIFIED=0
 FROM_IPSW=""
+DISK_SIZE=""
+DISK_FORMAT=""
 RUN=0
 NO_GRAPHICS=0
 FORCE=0
@@ -78,6 +82,24 @@ while [[ $# -gt 0 ]]; do
         exit 2
       fi
       FROM_IPSW="$2"
+      shift 2
+      ;;
+    --disk-size)
+      if [[ $# -lt 2 ]]; then
+        echo "error: --disk-size requires a value" >&2
+        usage >&2
+        exit 2
+      fi
+      DISK_SIZE="$2"
+      shift 2
+      ;;
+    --disk-format)
+      if [[ $# -lt 2 ]]; then
+        echo "error: --disk-format requires a value" >&2
+        usage >&2
+        exit 2
+      fi
+      DISK_FORMAT="$2"
       shift 2
       ;;
     --run)
@@ -144,7 +166,15 @@ fi
 if [[ "$NEED_CREATE" -eq 1 ]]; then
   if [[ -n "$FROM_IPSW" ]]; then
     echo "[tart] create: --from-ipsw=$FROM_IPSW $NAME" >&2
-    tart create "--from-ipsw=$FROM_IPSW" "$NAME"
+    create_args=(create "--from-ipsw=$FROM_IPSW")
+    if [[ -n "$DISK_SIZE" ]]; then
+      create_args+=("--disk-size=$DISK_SIZE")
+    fi
+    if [[ -n "$DISK_FORMAT" ]]; then
+      create_args+=("--disk-format=$DISK_FORMAT")
+    fi
+    create_args+=("$NAME")
+    tart "${create_args[@]}"
   else
     source_image="$IMAGE"
     if [[ "$IMAGE_SPECIFIED" -eq 0 ]]; then
@@ -192,7 +222,32 @@ Next steps to turn this into a stable "golden" automation image:
 
 3) Seed only synthetic fixtures (Mailboxes, documents, etc.) inside the VM.
 
-4) Stop the VM and treat it as a read-only base.
+4) Ensure Tart Guest Agent is installed and configured (enables `tart exec` and clipboard).
+
+   - If you cloned a Cirrus `*-base` / `*-xcode` image, guest agent is already present.
+   - If you created from an IPSW (or used a `*-vanilla` image), install it inside the VM:
+
+       brew install cirruslabs/cli/tart-guest-agent
+
+     Then install the launchd plists (templates provided in this skill):
+
+       applescript-development/assets/tart_guest_agent/org.cirruslabs.tart-guest-daemon.plist
+       applescript-development/assets/tart_guest_agent/org.cirruslabs.tart-guest-agent.plist
+
+     Copy them into:
+
+       /Library/LaunchDaemons/org.cirruslabs.tart-guest-daemon.plist
+       /Library/LaunchAgents/org.cirruslabs.tart-guest-agent.plist
+
+     and reboot (or stop/start) the VM to ensure they are loaded.
+
+     These templates assume Apple Silicon Homebrew prefix (`/opt/homebrew`) and a test user named `admin`.
+     If your VM differs, adjust `ProgramArguments` and `WorkingDirectory` in the plists.
+
+     Note: for AppleScript/TCC work you typically want the agent variant (LaunchAgent),
+     so commands executed via `tart exec` run as the logged-in test user, not root.
+
+5) Stop the VM and treat it as a read-only base.
 
 Then use the disposable-per-run harness:
   applescript-development/scripts/run_in_vm_tart.sh --base <this-vm-name> --cmd './scripts/test_integration.sh'

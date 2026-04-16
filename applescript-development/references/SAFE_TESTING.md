@@ -97,6 +97,8 @@ shares plus `tart exec` (guest-agent based) command execution.
 brew install cirruslabs/cli/tart
 ```
 
+If you install Tart from a release archive (`tart.app`), prefer invoking the binary inside the app bundle (or define a shell alias to it) instead of symlinking a standalone `tart` binary. Some Tart operations rely on the app bundle to pick up embedded privileges/entitlements.
+
 ### Choose a base image
 
 Tart publishes macOS images in an OCI registry. A common starting point for macOS 26 (Tahoe) is:
@@ -139,6 +141,15 @@ tart run tahoe-base \
   --no-graphics
 ```
 
+Optional hardening: tighten networking for integration runs.
+
+- **Host-only network** (no guest internet): `--net-host`
+- **Softnet isolation** (userspace packet filter): `--net-softnet` plus optional allow/block rules
+  - default-deny example: `--net-softnet-block=0.0.0.0/0`
+  - allow local LAN example: `--net-softnet-allow=192.168.0.0/24`
+
+Note: some networking modes require root privileges (passwordless sudo) and will fail in non-interactive runs if unavailable.
+
 On macOS guests, these mounts are auto-mounted under:
 
 ```text
@@ -158,8 +169,51 @@ If the guest agent is present and running, you can execute commands without SSH:
 tart exec tahoe-base uname -a
 ```
 
+Notes:
+
+- `tart exec` is only available on host macOS **14+**.
+- `tart exec` requires the Tart Guest Agent to be installed and running in the guest.
+
 If you build your own VM image from scratch, plan to install and enable the Tart guest agent inside the VM before you
 expect `tart exec` to work.
+
+### Installing Tart Guest Agent in custom images (IPSW / `*-vanilla`)
+
+Cirrus `*-base` / `*-xcode` images already include the guest agent; for a VM you create from IPSW (or a `*-vanilla` image), you need to install and enable it.
+
+Inside the VM (as the test user):
+
+```sh
+brew install cirruslabs/cli/tart-guest-agent
+```
+
+Then install launchd plists so the agent is started automatically:
+
+1. Copy the templates from this skill:
+
+   - `applescript-development/assets/tart_guest_agent/org.cirruslabs.tart-guest-daemon.plist`
+   - `applescript-development/assets/tart_guest_agent/org.cirruslabs.tart-guest-agent.plist`
+
+   These templates assume:
+
+   - Apple Silicon Homebrew prefix (`/opt/homebrew`)
+   - a test user named `admin` (used as the LaunchAgent working directory)
+
+   If your VM uses a different username or Homebrew prefix, adjust `ProgramArguments` and `WorkingDirectory` accordingly.
+
+2. Install them into:
+
+   - `/Library/LaunchDaemons/org.cirruslabs.tart-guest-daemon.plist`
+   - `/Library/LaunchAgents/org.cirruslabs.tart-guest-agent.plist`
+
+3. Ensure ownership/permissions:
+
+   - owner: `root:wheel`
+   - mode: `0644`
+
+4. Reboot (or stop/start) the VM so launchd loads them.
+
+For AppleScript/TCC workflows, prefer the **LaunchAgent** variant (runs as the logged-in user), so commands started via `tart exec` execute with the same user/session identity that gets TCC approvals.
 
 ### Create a golden VM image from scratch (IPSW)
 
